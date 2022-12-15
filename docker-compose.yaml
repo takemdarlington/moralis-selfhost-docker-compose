@@ -1,0 +1,55 @@
+version: '3.7'
+
+services:
+  moralis-app:
+    container_name: moralis-app
+    build:
+      context: ./parse-server-migration
+      dockerfile: Dockerfile
+    ports:
+      - 1337:1337
+    networks:
+      - moralisnet
+
+  moralis-redis:
+    image: redis
+    container_name: moralis-redis
+    ports:
+      - 6379:6379
+    networks:
+      - moralisnet
+    volumes: 
+      - moralis-redis:/data
+
+  moralis-mongo:
+    image: mongo
+    container_name: moralis-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - moralisnet
+    volumes: 
+      - moralis-db:/data/db
+
+  moralis-mongo-express:
+    image: mongo-express
+    container_name: moralis-mongo-express
+    depends_on:
+      - moralis-mongo
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@moralis-mongo:27017/
+    networks:
+      - moralisnet
+
+networks:
+  moralisnet:
+    driver: bridge
+
+volumes:
+  moralis-db:
+  moralis-redis:
